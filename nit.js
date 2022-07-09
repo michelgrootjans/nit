@@ -1,15 +1,29 @@
 const {exec} = require("child_process");
 const {promisify} = require("util");
-
-const head = '7934d167504db1230360cb7ba75563aea3780229';
 const exec_promise = promisify(exec);
 
-async function readGitCat(head1) {
-  var {stdout} =  await exec_promise(`git cat-file -p ${head1}`)
-  let [tree, ...tail] = stdout.split("\n");
-  let [,hash] = tree.split(" ");
-  console.log({tree, tail, hash,})
-  readGitCat(hash);
+const commitSHA = '7934d167504db1230360cb7ba75563aea3780229';
+
+async function readGitFile(sha) {
+  const {stdout} = await exec_promise(`git cat-file -p ${sha}`)
+  const [node] = stdout.split("\n");
+  console.log("file", node)
 }
 
-readGitCat(head)
+async function readGitNode(sha) {
+  const {stdout} = await exec_promise(`git cat-file -p ${sha}`)
+  const [node] = stdout.split("\n");
+  const [, hash] = node.split(" ");
+  console.log("node", {node, hash,})
+  readGitFile("a5aa2fb488a17fcbc5e4ff0d92a78f73a34a33a1")
+}
+
+async function readGitRoot(rootSha) {
+  const {stdout} =  await exec_promise(`git cat-file -p ${rootSha}`)
+  const [node] = stdout.split("\n");
+  const [,sha] = node.split(" ");
+  console.log("root", {node, sha,})
+  readGitNode(sha);
+}
+
+readGitRoot(commitSHA)
